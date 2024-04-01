@@ -7,6 +7,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketTimeoutException;
 
+import es.um.redes.boletinUDP.UDPServer;
 import es.um.redes.nanoFiles.udp.message.DirMessage;
 import es.um.redes.nanoFiles.udp.message.DirMessageOps;
 import es.um.redes.nanoFiles.util.FileInfo;
@@ -53,16 +54,20 @@ public class DirectoryConnector {
 
 	public DirectoryConnector(String address) throws IOException {
 		/*
-		 * TODO: Convertir el nombre de host 'address' a InetAddress y guardar la
+		 * DONE: Convertir el nombre de host 'address' a InetAddress y guardar la
 		 * dirección de socket (address:DIRECTORY_PORT) del directorio en el atributo
 		 * directoryAddress, para poder enviar datagramas a dicho destino.
 		 */
+		
+		InetAddress serverIp = InetAddress.getByName(address);
+		InetSocketAddress serverSocketAddr = new InetSocketAddress(serverIp, DIRECTORY_PORT);
+		
 		/*
-		 * TODO: Crea el socket UDP en cualquier puerto para enviar datagramas al
+		 * DONE: Crea el socket UDP en cualquier puerto para enviar datagramas al
 		 * directorio
 		 */
-
-
+		
+		DatagramSocket socket = new DatagramSocket();
 
 	}
 
@@ -89,10 +94,22 @@ public class DirectoryConnector {
 			System.exit(-1);
 		}
 		/*
-		 * TODO: Enviar datos en un datagrama al directorio y recibir una respuesta. El
+		 * DONE: Enviar datos en un datagrama al directorio y recibir una respuesta. El
 		 * array devuelto debe contener únicamente los datos recibidos, *NO* el búfer de
 		 * recepción al completo.
 		 */
+		
+		DatagramPacket dataToDir = new DatagramPacket(requestData, requestData.length, directoryAddress);
+		DatagramPacket dataFromDir = new DatagramPacket(responseData, responseData.length);
+		try {
+			socket.send(dataToDir);
+			socket.receive(dataFromDir);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
 		/*
 		 * TODO: Una vez el envío y recepción asumiendo un canal confiable (sin
 		 * pérdidas) esté terminado y probado, debe implementarse un mecanismo de

@@ -76,8 +76,9 @@ public class DirectoryConnector {
 	 * 
 	 * @param requestData los datos a enviar al directorio (mensaje de solicitud)
 	 * @return los datos recibidos del directorio (mensaje de respuesta)
+	 * @throws SocketTimeoutException 
 	 */
-	private byte[] sendAndReceiveDatagrams(byte[] requestData) {
+	private byte[] sendAndReceiveDatagrams(byte[] requestData) throws SocketTimeoutException {
 		byte responseData[] = new byte[DirMessage.PACKET_MAX_SIZE];
 		byte response[] = null;
 		if (directoryAddress == null) {
@@ -101,24 +102,38 @@ public class DirectoryConnector {
 		
 		DatagramPacket dataToDir = new DatagramPacket(requestData, requestData.length, directoryAddress);
 		DatagramPacket dataFromDir = new DatagramPacket(responseData, responseData.length);
+		int i=0;
+		while (i < MAX_NUMBER_OF_ATTEMPTS)
 		try {
 			socket.send(dataToDir);
+			socket.setSoTimeout(TIMEOUT);
 			socket.receive(dataFromDir);
+			i = MAX_NUMBER_OF_ATTEMPTS;
+		} catch (SocketTimeoutException e) {
+			i++;
+			if (i == MAX_NUMBER_OF_ATTEMPTS) { 
+				System.err.println("Response to request did not arrive");
+				throw e;
+			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.err.println("Error with socket"); 
+			System.exit(1); 
 		}
 		
+		response = new byte[dataFromDir.getLength()];
+		System.arraycopy(dataFromDir.getData(), 0, response, 0, dataFromDir.getLength());
 		
 		/*
-		 * TODO: Una vez el envío y recepción asumiendo un canal confiable (sin
+		 * DONE: Una vez el envío y recepción asumiendo un canal confiable (sin
 		 * pérdidas) esté terminado y probado, debe implementarse un mecanismo de
 		 * retransmisión usando temporizador, en caso de que no se reciba respuesta en
 		 * el plazo de TIMEOUT. En caso de salte el timeout, se debe reintentar como
 		 * máximo en MAX_NUMBER_OF_ATTEMPTS ocasiones.
 		 */
+		
+		
 		/*
-		 * TODO: Las excepciones que puedan lanzarse al leer/escribir en el socket deben
+		 * DONE: Las excepciones que puedan lanzarse al leer/escribir en el socket deben
 		 * ser capturadas y tratadas en este método. Si se produce una excepción de
 		 * entrada/salida (error del que no es posible recuperarse), se debe informar y
 		 * terminar el programa.
@@ -127,7 +142,6 @@ public class DirectoryConnector {
 		 * NOTA: Las excepciones deben tratarse de la más concreta a la más genérica.
 		 * SocketTimeoutException es más concreta que IOException.
 		 */
-
 
 
 		if (response != null && response.length == responseData.length) {

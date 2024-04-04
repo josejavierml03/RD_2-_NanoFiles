@@ -7,7 +7,6 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketTimeoutException;
 
-import es.um.redes.boletinUDP.UDPServer;
 import es.um.redes.nanoFiles.udp.message.DirMessage;
 import es.um.redes.nanoFiles.udp.message.DirMessageOps;
 import es.um.redes.nanoFiles.util.FileInfo;
@@ -60,14 +59,14 @@ public class DirectoryConnector {
 		 */
 		
 		InetAddress serverIp = InetAddress.getByName(address);
-		InetSocketAddress serverSocketAddr = new InetSocketAddress(serverIp, DIRECTORY_PORT);
+		this.directoryAddress = new InetSocketAddress(serverIp, DIRECTORY_PORT);
 		
 		/*
 		 * DONE: Crea el socket UDP en cualquier puerto para enviar datagramas al
 		 * directorio
 		 */
 		
-		DatagramSocket socket = new DatagramSocket();
+		this.socket = new DatagramSocket();
 
 	}
 
@@ -106,7 +105,7 @@ public class DirectoryConnector {
 		while (i < MAX_NUMBER_OF_ATTEMPTS)
 		try {
 			socket.send(dataToDir);
-			socket.setSoTimeout(TIMEOUT);
+			socket.setSoTimeout(TIMEOUT*1000);
 			socket.receive(dataFromDir);
 			i = MAX_NUMBER_OF_ATTEMPTS;
 		} catch (SocketTimeoutException e) {
@@ -164,11 +163,21 @@ public class DirectoryConnector {
 		 * recibida es "loginok". En tal caso, devuelve verdadero, falso si la respuesta
 		 * no contiene los datos esperados.
 		 */
-		boolean success = false;
-
-
-
-		return success;
+		
+		String aux = "login";
+		byte requestData[] = aux.getBytes();
+		byte responseData[];
+		try {
+			responseData = sendAndReceiveDatagrams(requestData);
+		} catch (SocketTimeoutException e) {
+			return false;
+		}
+		
+		String respuesta = new String (responseData).trim();
+		if(respuesta.equals("loginok")) {
+			return true;
+		}
+		return false;
 	}
 
 	public InetSocketAddress getDirectoryAddress() {
@@ -201,8 +210,6 @@ public class DirectoryConnector {
 		// TODO: 6.Extraer datos del objeto DirMessage y procesarlos (p.ej., sessionKey)
 		// TODO: 7.Devolver éxito/fracaso de la operación
 
-
-
 		return success;
 	}
 
@@ -218,8 +225,6 @@ public class DirectoryConnector {
 		String[] userlist = null;
 		// TODO: Ver TODOs en logIntoDirectory y seguir esquema similar
 
-
-
 		return userlist;
 	}
 
@@ -230,8 +235,6 @@ public class DirectoryConnector {
 	 */
 	public boolean logoutFromDirectory() {
 		// TODO: Ver TODOs en logIntoDirectory y seguir esquema similar
-
-
 
 		return false;
 	}
@@ -247,8 +250,6 @@ public class DirectoryConnector {
 	public boolean registerServerPort(int serverPort) {
 		// TODO: Ver TODOs en logIntoDirectory y seguir esquema similar
 		boolean success = false;
-
-
 
 		return success;
 	}
@@ -266,8 +267,6 @@ public class DirectoryConnector {
 		InetSocketAddress serverAddr = null;
 		// TODO: Ver TODOs en logIntoDirectory y seguir esquema similar
 
-
-
 		return serverAddr;
 	}
 
@@ -283,8 +282,6 @@ public class DirectoryConnector {
 		boolean success = false;
 
 		// TODO: Ver TODOs en logIntoDirectory y seguir esquema similar
-
-
 
 		return success;
 	}
@@ -302,8 +299,6 @@ public class DirectoryConnector {
 		FileInfo[] filelist = null;
 		// TODO: Ver TODOs en logIntoDirectory y seguir esquema similar
 
-
-
 		return filelist;
 	}
 
@@ -320,12 +315,7 @@ public class DirectoryConnector {
 		String[] nicklist = null;
 		// TODO: Ver TODOs en logIntoDirectory y seguir esquema similar
 
-
-
 		return nicklist;
 	}
-
-
-
 
 }

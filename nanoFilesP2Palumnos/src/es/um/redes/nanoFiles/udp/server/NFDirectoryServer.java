@@ -41,13 +41,11 @@ public class NFDirectoryServer {
 	 * registrados, etc.
 	 */
 
-
-
-
 	/**
 	 * Generador de claves de sesión aleatorias (sessionKeys)
 	 */
 	Random random = new Random();
+	
 	/**
 	 * Probabilidad de descartar un mensaje recibido en el directorio (para simular
 	 * enlace no confiable y testear el código de retransmisión)
@@ -60,16 +58,22 @@ public class NFDirectoryServer {
 		 * confiable)
 		 */
 		messageDiscardProbability = corruptionProbability;
+		
 		/*
-		 * TODO: (Boletín UDP) Inicializar el atributo socket: Crear un socket UDP
+		 * DONE: (Boletín UDP) Inicializar el atributo socket: Crear un socket UDP
 		 * ligado al puerto especificado por el argumento directoryPort en la máquina
 		 * local,
 		 */
+		
+		 socket = new DatagramSocket(DIRECTORY_PORT);
+		
 		/*
-		 * TODO: (Boletín UDP) Inicializar el resto de atributos de esta clase
+		 * DONE: (Boletín UDP) Inicializar el resto de atributos de esta clase
 		 * (estructuras de datos que mantiene el servidor: nicks, sessionKeys, etc.)
 		 */
-
+		 
+		 nicks = new HashMap<String, Integer>();
+		 sessionKeys = new HashMap<Integer, String>();
 
 
 		if (NanoFiles.testMode) {
@@ -86,27 +90,32 @@ public class NFDirectoryServer {
 		InetSocketAddress clientAddr = null;
 		int dataLength = -1;
 		/*
-		 * TODO: (Boletín UDP) Crear un búfer para recibir datagramas y un datagrama
+		 * DONE: (Boletín UDP) Crear un búfer para recibir datagramas y un datagrama
 		 * asociado al búfer
 		 */
 
-
+		receptionBuffer = new byte[DirMessage.PACKET_MAX_SIZE];
+		DatagramPacket packetFromClient = new DatagramPacket(receptionBuffer, receptionBuffer.length);
 
 
 		System.out.println("Directory starting...");
 
 		while (true) { // Bucle principal del servidor de directorio
 
-			// TODO: (Boletín UDP) Recibimos a través del socket un datagrama
+			// DONE: (Boletín UDP) Recibimos a través del socket un datagrama
+			
+			socket.receive(packetFromClient);
 
-			// TODO: (Boletín UDP) Establecemos dataLength con longitud del datagrama
+			// DONE: (Boletín UDP) Establecemos dataLength con longitud del datagrama
 			// recibido
+			
+			dataLength = packetFromClient.getLength();
 
-			// TODO: (Boletín UDP) Establecemos 'clientAddr' con la dirección del cliente,
+			// DONE: (Boletín UDP) Establecemos 'clientAddr' con la dirección del cliente,
 			// obtenida del
 			// datagrama recibido
-
-
+			
+			clientAddr =  (InetSocketAddress) packetFromClient.getSocketAddress();
 
 
 			if (NanoFiles.testMode) {
@@ -122,24 +131,30 @@ public class NFDirectoryServer {
 			if (dataLength > 0) {
 				String messageFromClient = null;
 				/*
-				 * TODO: (Boletín UDP) Construir una cadena a partir de los datos recibidos en
+				 * DONE: (Boletín UDP) Construir una cadena a partir de los datos recibidos en
 				 * el buffer de recepción
 				 */
-
-
+				
+				messageFromClient = new String(receptionBuffer, 0, packetFromClient.getLength());
 
 
 				if (NanoFiles.testMode) { // En modo de prueba (mensajes en "crudo", boletín UDP)
 					System.out.println("[testMode] Contents interpreted as " + dataLength + "-byte String: \""
 							+ messageFromClient + "\"");
 					/*
-					 * TODO: (Boletín UDP) Comprobar que se ha recibido un datagrama con la cadena
+					 * DONE: (Boletín UDP) Comprobar que se ha recibido un datagrama con la cadena
 					 * "login" y en ese caso enviar como respuesta un mensaje al cliente con la
 					 * cadena "loginok". Si el mensaje recibido no es "login", se informa del error
 					 * y no se envía ninguna respuesta.
 					 */
-
-
+					
+					if(messageFromClient.equals("login")) {
+						String response = new String("loginok");
+						byte[] arrayB = response.getBytes();
+						DatagramPacket PacketToClient = new DatagramPacket(arrayB, arrayB.length, clientAddr);
+						socket.send(PacketToClient);
+					}
+					System.err.println("Error al recibir la cadena");
 
 				} else { // Servidor funcionando en modo producción (mensajes bien formados)
 

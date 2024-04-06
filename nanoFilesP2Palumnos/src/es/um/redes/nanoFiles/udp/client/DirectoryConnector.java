@@ -158,7 +158,7 @@ public class DirectoryConnector {
 	 */
 	public boolean testSendAndReceive() {
 		/*
-		 * TODO: Probar el correcto funcionamiento de sendAndReceiveDatagrams. Se debe
+		 * DONE: Probar el correcto funcionamiento de sendAndReceiveDatagrams. Se debe
 		 * enviar un datagrama con la cadena "login" y comprobar que la respuesta
 		 * recibida es "loginok". En tal caso, devuelve verdadero, falso si la respuesta
 		 * no contiene los datos esperados.

@@ -54,7 +54,7 @@ public class NFControllerLogicDir {
 	protected boolean doLogin(String directoryHostname, String nickname) {
 
 		/*
-		 * TODO: Debe crear un objeto DirectoryConnector a partir del parámetro
+		 * DONE: Debe crear un objeto DirectoryConnector a partir del parámetro
 		 * directoryHostname y guardarlo en el atributo correspondiente para que pueda
 		 * ser utilizado por el resto de métodos de esta clase. A continuación,
 		 * utilizarlo para comunicarse con el directorio y tratar de realizar el
@@ -62,9 +62,18 @@ public class NFControllerLogicDir {
 		 * sesión asignada por el directorio. Devolver éxito/fracaso de la operación.
 		 */
 		boolean result = false;
-
-
-
+		try {
+			directoryConnector = new DirectoryConnector(directoryHostname);
+			if(directoryConnector.logIntoDirectory(nickname) == false) {
+				System.out.println("No se pudo realizar el login");
+			}
+			else {
+				System.out.println("Login realizado con éxito, SessionKey: " + directoryConnector.getSessionKey());
+				result = true;
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		return result;
 	}
 
@@ -78,6 +87,7 @@ public class NFControllerLogicDir {
 		 * dar de baja a este usuario. Se debe enviar la clave de sesión para
 		 * identificarse. Devolver éxito/fracaso de la operación.
 		 */
+		directoryConnector.logoutFromDirectory();
 		boolean result = false;
 
 

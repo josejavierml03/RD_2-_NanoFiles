@@ -111,11 +111,11 @@ public class DirectoryConnector {
 		} catch (SocketTimeoutException e) {
 			i++;
 			if (i == MAX_NUMBER_OF_ATTEMPTS) { 
-				System.err.println("Response to request did not arrive");
+				System.err.println("La respuesta a la solicitud no llegó");
 				throw e;
 			}
 		} catch (IOException e) {
-			System.err.println("Error with socket"); 
+			System.err.println("Error con el socket"); 
 			System.exit(1); 
 		}
 		
